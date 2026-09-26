@@ -1,0 +1,51 @@
+:root {
+  --theme-success-500: #14516d;
+}
+
+.nyce-admin-logo img {
+  display: block;
+  height: 2.5rem;
+  width: auto;
+}
+
+.nyce-admin-icon img {
+  display: block;
+  height: 1.5rem;
+  width: auto;
+}
+
+.nyce-before-dashboard {
+  margin: 0 0 2rem;
+  max-width: 48rem;
+}
+
+.nyce-before-dashboard h2 {
+  margin: 0 0 0.5rem;
+}
+
+.nyce-before-dashboard p,
+.nyce-before-dashboard li {
+  line-height: 1.5;
+}
+
+.nyce-review-queue {
+  margin: 0 0 1rem;
+}
+
+.nyce-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.nyce-review-note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 16rem;
+}
+
+.nyce-review-note textarea {
+  width: 100%;
+}
