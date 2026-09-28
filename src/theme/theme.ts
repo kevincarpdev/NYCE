@@ -26,6 +26,14 @@ export const theme = {
       invited: '#14516d',
       public: '#3d7a84',
     },
+    overlay: {
+      start: 'rgba(43, 59, 71, 0.82)',
+      mid: 'rgba(20, 81, 109, 0.42)',
+      end: 'rgba(20, 81, 109, 0.08)',
+    },
+    focus: {
+      ring: 'rgba(20, 81, 109, 0.24)',
+    },
   },
   typography: {
     fontFamily: {
@@ -38,6 +46,7 @@ export const theme = {
       lg: '1.125rem',
       xl: '1.5rem',
       xxl: '2.25rem',
+      panel: '2.5rem',
       display: '3.25rem',
     },
     fontWeights: {
@@ -59,10 +68,37 @@ export const theme = {
     sm: '2px',
   },
   layout: {
-    maxWidth: '72rem',
+    maxWidth: '90rem',
+    wideMaxWidth: '90rem',
+    gutter: '1.5rem',
+    gutterWide: '2.5rem',
+    asideWidth: '24rem',
+    previewHeight: '32rem',
     logoWidth: 168,
     logoWidthMobile: 120,
     logoHeight: 44,
+    authPhotoRatio: '1.15fr',
+    authFormWidth: '28rem',
+    curveHeight: '5.5rem',
+    curveClip: 'ellipse(70% 100% at 50% 100%)',
+    authMobilePhoto: '14rem',
+    heroPhotoHeight: '22rem',
+    bannerHeight: '2.75rem',
+    areaMin: '8rem',
+  },
+  zIndex: {
+    base: 0,
+    overlay: 1,
+    content: 2,
+  },
+  motion: {
+    marquee: '42s',
+    fade: '160ms',
+    easing: 'linear',
+    out: 'ease-out',
+  },
+  opacity: {
+    disabled: 0.45,
   },
   icons: {
     sm: 16,
@@ -71,6 +107,7 @@ export const theme = {
   },
   breakpoints: {
     md: '48rem',
+    lg: '80rem',
   },
 } as const
 

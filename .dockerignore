@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env
+.db
+.db-wal
+.db-shm
+files
+*.db
+AGENTS.md
+CLAUDE.md
+playwright-report
+test-results
+tsconfig.tsbuildinfo

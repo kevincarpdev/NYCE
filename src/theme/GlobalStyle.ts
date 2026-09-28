@@ -49,4 +49,18 @@ export const GlobalStyle = createGlobalStyle`
   h3 {
     font-size: ${({ theme }) => theme.typography.fontSizes.xl};
   }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: ${({ theme }) => theme.spacing(0.5)} solid ${({ theme }) => theme.colors.content.accent};
+    outline-offset: ${({ theme }) => theme.spacing(1)};
+  }
 `

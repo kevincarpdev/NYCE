@@ -1,5 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@500;700&display=swap');
+
 :root {
+  --nyce-brand: #14516d;
+  --nyce-ink: #2b3b47;
+  --nyce-gold: #ffca00;
+  --nyce-canvas: #67aab5;
+  --nyce-paper: #eef4f5;
+  --nyce-wash: #d7ecef;
+  --font-body: Onest, 'Helvetica Neue', sans-serif;
   --theme-success-500: #14516d;
+  --color-success-500: #14516d;
+}
+
+html {
+  --font-body: Onest, 'Helvetica Neue', sans-serif;
+}
+
+.app-header {
+  box-shadow: inset 0 4px 0 var(--nyce-brand);
+}
+
+.nav {
+  background: var(--nyce-ink);
+  color: var(--nyce-paper);
+}
+
+.nav a,
+.nav span {
+  color: inherit;
+}
+
+.btn--style-primary {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  --bg-color: var(--nyce-brand);
+  --hover-bg: var(--nyce-ink);
 }
 
 .nyce-admin-logo img {
@@ -14,18 +50,88 @@
   width: auto;
 }
 
-.nyce-before-dashboard {
+.nyce-welcome {
   margin: 0 0 2rem;
+  background: var(--nyce-brand);
+  color: #ffffff;
+}
+
+.nyce-welcome__photo {
+  position: relative;
+  height: 12rem;
+  overflow: hidden;
+  background: var(--nyce-ink);
+}
+
+.nyce-welcome__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nyce-welcome__photo::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4.5rem;
+  background: var(--nyce-brand);
+  clip-path: ellipse(70% 100% at 50% 100%);
+  pointer-events: none;
+}
+
+.nyce-welcome__body {
+  padding: 0 1.5rem 1.75rem;
   max-width: 48rem;
 }
 
-.nyce-before-dashboard h2 {
+.nyce-welcome__eyebrow {
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--nyce-gold);
+}
+
+.nyce-welcome h2 {
   margin: 0 0 0.5rem;
 }
 
-.nyce-before-dashboard p,
-.nyce-before-dashboard li {
+.nyce-welcome p,
+.nyce-welcome li {
   line-height: 1.5;
+}
+
+.nyce-welcome__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.nyce-welcome__actions a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: var(--nyce-gold);
+  color: var(--nyce-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nyce-welcome details {
+  color: var(--nyce-wash);
+}
+
+.nyce-welcome summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #ffffff;
 }
 
 .nyce-review-queue {

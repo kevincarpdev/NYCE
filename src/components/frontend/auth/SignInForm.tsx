@@ -1,56 +1,52 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
 
+import { CredentialsFields } from '@/components/frontend/auth/CredentialsFields'
+import { DemoAccessNote } from '@/components/frontend/auth/DemoAccessNote'
+import { RolePicker } from '@/components/frontend/auth/RolePicker'
 import { Button } from '@/components/frontend/ui/Button'
-import { DEMO_PASSWORD, demoAccounts } from '@/lib/demo'
+import { hubCopy } from '@/lib/brand'
+import { DEMO_PASSWORD, demoAccounts, reviewerAccount, type DemoAccount } from '@/lib/demo'
+import { isAdminPath } from '@/lib/safePath'
+import type { SessionUser } from '@/lib/session'
 
-const Grid = styled.div`
-  display: grid;
-  gap: ${({ theme }) => theme.spacing(4)};
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: 1fr 1fr;
-  }
+const Title = styled.h1`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.fontSizes.xxl};
+  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
 `
 
-const Account = styled.button`
-  text-align: left;
-  background: ${({ theme }) => theme.colors.surface.raised};
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
-  padding: ${({ theme }) => theme.spacing(5)};
-  cursor: pointer;
-  color: inherit;
+const Lead = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.content.muted};
 `
 
-const Role = styled.span`
-  display: block;
-  font-size: ${({ theme }) => theme.typography.fontSizes.xs};
-  letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.colors.content.accent};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+const Notice = styled.p`
+  margin: 0;
+  background: ${({ theme }) => theme.colors.surface.wash};
+  border: 1px solid ${({ theme }) => theme.colors.border.strong};
+  padding: ${({ theme }) => theme.spacing(4)};
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+`
+
+const SessionLine = styled.p`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.content.muted};
 `
 
 const Form = styled.form`
   display: grid;
-  gap: ${({ theme }) => theme.spacing(4)};
-  margin-top: ${({ theme }) => theme.spacing(8)};
+  gap: ${({ theme }) => theme.spacing(5)};
 `
 
-const Field = styled.label`
+const Actions = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing(2)};
-  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-`
-
-const Input = styled.input`
-  border: 1px solid ${({ theme }) => theme.colors.border.strong};
-  padding: ${({ theme }) => theme.spacing(3)};
-  background: ${({ theme }) => theme.colors.surface.raised};
+  gap: ${({ theme }) => theme.spacing(3)};
 `
 
 const ErrorText = styled.p`
@@ -58,96 +54,108 @@ const ErrorText = styled.p`
   margin: 0;
 `
 
-const Hint = styled.p`
-  color: ${({ theme }) => theme.colors.content.muted};
+const Quiet = styled(Link)`
   font-size: ${({ theme }) => theme.typography.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.content.accent};
+  text-underline-offset: ${({ theme }) => theme.spacing(1)};
+  transition: color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.surface.ink};
+    text-decoration: underline;
+  }
 `
+
+const pickAccount = (reason?: string, user?: SessionUser | null): DemoAccount => {
+  if (reason === 'admin') return reviewerAccount
+  if (user) {
+    const match = demoAccounts.find((account) => account.email === user.email)
+    if (match) return match
+  }
+  return demoAccounts[0]
+}
+
+const resolveTarget = (account: DemoAccount, nextPath: string) => {
+  if (isAdminPath(nextPath)) {
+    return account.role === 'Reviewer' ? nextPath : account.href
+  }
+  if (nextPath && nextPath !== '/library') return nextPath
+  return account.href
+}
 
 type SignInProps = {
   nextPath: string
+  reason?: string
+  user?: SessionUser | null
 }
 
-const SignInFormComponent = ({ nextPath }: SignInProps) => {
+const SignInFormComponent = ({ nextPath, reason, user }: SignInProps) => {
   const router = useRouter()
-  const [email, setEmail] = useState<string>(demoAccounts[0].email)
+  const initial = useMemo(() => pickAccount(reason, user), [reason, user])
+  const [selected, setSelected] = useState<DemoAccount>(initial)
+  const [email, setEmail] = useState<string>(initial.email)
   const [password, setPassword] = useState(DEMO_PASSWORD)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const destinations = useMemo(
-    () => Object.fromEntries(demoAccounts.map((account) => [account.email, account.href])),
-    [],
-  )
+  const choose = (account: DemoAccount) => {
+    setSelected(account)
+    setEmail(account.email)
+    setPassword(DEMO_PASSWORD)
+  }
 
-  const submit = async (
-    event?: React.FormEvent,
-    destination?: string,
-    credentials?: { email: string; password: string },
-  ) => {
+  const submit = async (event?: React.FormEvent) => {
     event?.preventDefault()
-    const loginEmail = credentials?.email ?? email
-    const loginPassword = credentials?.password ?? password
     setBusy(true)
     setError('')
+    const matched = demoAccounts.find((account) => account.email === email) ?? selected
     const response = await fetch('/api/users/login', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+      body: JSON.stringify({ email, password }),
     })
     if (!response.ok) {
       setBusy(false)
-      setError('That sign-in did not work. Use a demo account below.')
+      setError('That sign-in did not work. Pick a demo role above.')
       return
     }
-        const target = destination || destinations[loginEmail] || nextPath || '/library'
+    const target = resolveTarget(matched, nextPath)
+    if (isAdminPath(target)) {
+      window.location.assign(target)
+      return
+    }
     router.push(target)
     router.refresh()
   }
 
   return (
-    <>
-      <Hint>Prototype accounts. Shared password {DEMO_PASSWORD}.</Hint>
-      <Grid>
-        {demoAccounts.map((account) => (
-          <Account
-            key={account.email}
-            onClick={() => {
-              setEmail(account.email)
-              setPassword(DEMO_PASSWORD)
-              void submit(undefined, nextPath && nextPath !== '/library' ? nextPath : account.href, {
-                email: account.email,
-                password: DEMO_PASSWORD,
-              })
-            }}
-            type="button"
-          >
-            <Role>{account.role}</Role>
-            <strong>{account.name}</strong>
-            <Hint>{account.hint}</Hint>
-            <Hint>{account.email}</Hint>
-          </Account>
-        ))}
-      </Grid>
-      <Form onSubmit={(event) => void submit(event)}>
-        <Field>
-          Email
-          <Input onChange={(event) => setEmail(event.target.value)} type="email" value={email} />
-        </Field>
-        <Field>
-          Password
-          <Input
-            onChange={(event) => setPassword(event.target.value)}
-            type="password"
-            value={password}
-          />
-        </Field>
-        {error ? <ErrorText>{error}</ErrorText> : null}
-        <Button disabled={busy} type="submit">
-          Sign in
+    <Form onSubmit={(event) => void submit(event)}>
+      <Title>{hubCopy.formTitle}</Title>
+      <Lead>{hubCopy.formLead}</Lead>
+      {reason === 'admin' ? <Notice>{hubCopy.adminNotice}</Notice> : null}
+      {user ? (
+        <SessionLine>
+          Signed in as {user.name}. Choose a role to switch account.
+        </SessionLine>
+      ) : null}
+      <RolePicker disabled={busy} onSelect={choose} selected={selected} />
+      <Actions>
+        <Button disabled={busy} type="submit" variant="gold">
+          Continue as {selected.name}
         </Button>
-      </Form>
-    </>
+        {error ? <ErrorText>{error}</ErrorText> : null}
+      </Actions>
+      <DemoAccessNote />
+      <CredentialsFields
+        email={email}
+        onEmail={setEmail}
+        onPassword={setPassword}
+        password={password}
+      />
+      <Quiet href="/library">{hubCopy.browse}</Quiet>
+    </Form>
   )
 }
 

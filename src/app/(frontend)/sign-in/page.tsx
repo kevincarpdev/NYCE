@@ -1,23 +1,20 @@
-import { PageSection, SectionWrapper } from '@/components/frontend/layout/Containers'
+import { AuthShell } from '@/components/frontend/auth/AuthShell'
 import { SignInForm } from '@/components/frontend/auth/SignInForm'
-import { PageHeading } from '@/components/frontend/ui/PageHeading'
+import { getSessionUser } from '@/lib/payload'
+import { isSafePath } from '@/lib/safePath'
 
-type Search = Promise<{ next?: string }>
+type Search = Promise<{ next?: string; redirect?: string; reason?: string }>
 
 export default async function SignInPage({ searchParams }: { searchParams: Search }) {
   const params = await searchParams
-  const nextPath = params.next && params.next.startsWith('/') ? params.next : '/library'
+  const requested = params.next || params.redirect
+  const nextPath = isSafePath(requested) ? requested : '/library'
+  const reason = params.reason === 'admin' ? 'admin' : undefined
+  const user = await getSessionUser()
 
   return (
-    <PageSection>
-      <SectionWrapper>
-        <PageHeading>Sign in</PageHeading>
-        <p>
-          Invited professors, students, and reviewers. Accounts live in this database, next to the
-          files.
-        </p>
-        <SignInForm nextPath={nextPath} />
-      </SectionWrapper>
-    </PageSection>
+    <AuthShell>
+      <SignInForm nextPath={nextPath} reason={reason} user={user} />
+    </AuthShell>
   )
 }

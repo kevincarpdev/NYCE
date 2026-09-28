@@ -1,11 +1,22 @@
 'use client'
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
+
+export const pageWidth = css`
+  width: min(100% - ${({ theme }) => theme.layout.gutter}, ${({ theme }) => theme.layout.maxWidth});
+  margin-inline: auto;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    width: min(
+      100% - ${({ theme }) => theme.layout.gutterWide},
+      ${({ theme }) => theme.layout.maxWidth}
+    );
+  }
+`
 
 const Shell = styled.div`
-  width: min(100% - ${({ theme }) => theme.spacing(8)}, ${({ theme }) => theme.layout.maxWidth});
-  margin-inline: auto;
+  ${pageWidth};
 `
 
 const Section = styled.section`

@@ -10,7 +10,7 @@ import { formatLabels, stageLabels, visibilityLabels } from '@/lib/labels'
 import type { SubmissionCard as Submission } from '@/lib/queries'
 import { theme } from '@/theme/theme'
 
-const Card = styled.article`
+const Card = styled(Link)`
   background: ${({ theme }) => theme.colors.surface.raised};
   border-top: ${({ theme }) => `${theme.spacing(1)} solid ${theme.colors.surface.gold}`};
   padding: ${({ theme }) => theme.spacing(6)};
@@ -18,6 +18,19 @@ const Card = styled.article`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(4)};
   height: 100%;
+  color: inherit;
+  transition:
+    box-shadow ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out},
+    color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:hover {
+    box-shadow: 0 ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(4)}
+      ${({ theme }) => theme.colors.focus.ring};
+  }
+
+  &:hover h3 {
+    color: ${({ theme }) => theme.colors.content.accent};
+  }
 `
 
 const Title = styled.h3`
@@ -25,6 +38,7 @@ const Title = styled.h3`
   font-size: ${({ theme }) => theme.typography.fontSizes.xl};
   line-height: ${({ theme }) => theme.typography.lineHeights.tight};
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
+  transition: color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
 `
 
 const Meta = styled.p`
@@ -51,7 +65,7 @@ const statusTone = (item: Submission) => {
 }
 
 const SubmissionCardComponent = ({ item }: CardProps) => (
-  <Card>
+  <Card href={item.canIterate ? `/library/${item.slug}/workspace` : `/library/${item.slug}`}>
     <Tags>
       <Badge tone={statusTone(item)}>
         {item.visibility === 'invited' ? <LockSimple size={theme.icons.sm} /> : null}
@@ -66,9 +80,7 @@ const SubmissionCardComponent = ({ item }: CardProps) => (
       <Badge>{formatLabels[item.format] || item.format}</Badge>
       <Badge>{stageLabels[item.stage] || item.stage}</Badge>
     </Tags>
-    <Title>
-      <Link href={`/library/${item.slug}`}>{item.title}</Link>
-    </Title>
+    <Title>{item.title}</Title>
     <Meta>
       {item.authors}
       {item.attributionUniversity ? ` · ${item.attributionUniversity}` : ''}

@@ -3,6 +3,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import { pageWidth } from '@/components/frontend/layout/Containers'
+
 const Footer = styled.footer`
   background: ${({ theme }) => theme.colors.surface.ink};
   color: ${({ theme }) => theme.colors.content.inverse};
@@ -10,8 +12,7 @@ const Footer = styled.footer`
 `
 
 const Inner = styled.div`
-  width: min(100% - ${({ theme }) => theme.spacing(8)}, ${({ theme }) => theme.layout.maxWidth});
-  margin-inline: auto;
+  ${pageWidth};
   padding-block: ${({ theme }) => theme.spacing(10)};
   display: grid;
   gap: ${({ theme }) => theme.spacing(4)};

@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import type { SessionUser } from '@/lib/session'
 import { sessionFlags } from '@/lib/session'
+import { pageWidth } from '@/components/frontend/layout/Containers'
 import { signOutAction } from '@/lib/logout'
 import { theme } from '@/theme/theme'
 
@@ -17,8 +18,7 @@ const Header = styled.header`
 `
 
 const Shell = styled.div`
-  width: min(100% - ${({ theme }) => theme.spacing(8)}, ${({ theme }) => theme.layout.maxWidth});
-  margin-inline: auto;
+  ${pageWidth};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
     display: grid;
@@ -82,6 +82,12 @@ const Nav = styled.nav<{ $open: boolean }>`
 const NavLink = styled(Link)`
   font-size: ${({ theme }) => theme.typography.fontSizes.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.content.primary};
+  transition: color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.content.accent};
+  }
 `
 
 const MenuButton = styled.button`
@@ -90,6 +96,12 @@ const MenuButton = styled.button`
   color: ${({ theme }) => theme.colors.content.accent};
   display: inline-flex;
   padding: ${({ theme }) => theme.spacing(2)};
+  cursor: pointer;
+  transition: color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.surface.ink};
+  }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
     display: none;
@@ -106,6 +118,11 @@ const Ghost = styled.button`
   font-size: ${({ theme }) => theme.typography.fontSizes.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   cursor: pointer;
+  transition: color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.content.accent};
+  }
 `
 
 type HeaderProps = {

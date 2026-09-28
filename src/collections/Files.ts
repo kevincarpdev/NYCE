@@ -27,7 +27,7 @@ export const Files: CollectionConfig = {
     group: 'Library',
     useAsTitle: 'filename',
     description: 'Private until the parent submission is published. Unpublished files have no public link.',
-    defaultColumns: ['filename', 'status', 'visibility', 'uploadedBy'],
+    defaultColumns: ['filename', 'kind', 'status', 'visibility', 'revision'],
   },
   access: {
     create: ({ req: { user } }) => canSubmitWork(user),
@@ -45,19 +45,24 @@ export const Files: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      ({ data, req, operation }) => {
+      ({ data, req, operation, originalDoc }) => {
         if (operation === 'create' && req.user && !data.uploadedBy) {
           data.uploadedBy = req.user.id
         }
         if (operation === 'create') {
           data.status = data.status || 'draft'
           data.visibility = data.visibility || 'invited'
+          data.revision = data.revision || 1
+        }
+        if (operation === 'update' && originalDoc) {
+          data.revision = Number(originalDoc.revision || 0) + 1
         }
         return data
       },
     ],
   },
   upload: {
+    staticDir: process.env.UPLOAD_DIR || 'files',
     mimeTypes: [
       'application/pdf',
       'application/msword',
@@ -72,8 +77,49 @@ export const Files: CollectionConfig = {
       'image/webp',
       'image/gif',
     ],
+    imageSizes: [
+      {
+        name: 'thumb',
+        width: 480,
+        height: 320,
+        position: 'centre',
+      },
+    ],
+    adminThumbnail: 'thumb',
   },
   fields: [
+    {
+      name: 'caption',
+      type: 'textarea',
+    },
+    {
+      name: 'kind',
+      type: 'select',
+      defaultValue: 'primary',
+      options: [
+        { label: 'Primary file', value: 'primary' },
+        { label: 'Supporting', value: 'supporting' },
+        { label: 'Appendix', value: 'appendix' },
+      ],
+    },
+    {
+      name: 'language',
+      type: 'select',
+      defaultValue: 'en',
+      options: [
+        { label: 'English', value: 'en' },
+        { label: 'Spanish', value: 'es' },
+      ],
+    },
+    { name: 'pageCount', type: 'number', min: 0 },
+    { name: 'revision', type: 'number', defaultValue: 1, admin: { readOnly: true } },
+    { name: 'internalNotes', type: 'textarea' },
+    {
+      name: 'replaces',
+      type: 'relationship',
+      relationTo: 'files',
+      admin: { description: 'Prior file this revision replaces.' },
+    },
     {
       name: 'uploadedBy',
       type: 'relationship',

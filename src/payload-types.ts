@@ -72,18 +72,31 @@ export interface Config {
     topics: Topic;
     submissions: Submission;
     files: File;
+    comments: Comment;
+    suggestions: Suggestion;
+    presences: Presence;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    projects: {
+      relatedSubmissions: 'submissions';
+    };
+    topics: {
+      relatedSubmissions: 'submissions';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     topics: TopicsSelect<false> | TopicsSelect<true>;
     submissions: SubmissionsSelect<false> | SubmissionsSelect<true>;
     files: FilesSelect<false> | FilesSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
+    suggestions: SuggestionsSelect<false> | SuggestionsSelect<true>;
+    presences: PresencesSelect<false> | PresencesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -132,6 +145,7 @@ export interface User {
   name: string;
   role: 'student' | 'professor' | 'member' | 'reviewer' | 'admin';
   university?: string | null;
+  title?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -161,11 +175,146 @@ export interface User {
 export interface Project {
   id: number;
   title: string;
-  slug: string;
-  kind: 'course' | 'cohort' | 'lab';
+  summary: string;
+  about?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  standing?: ('term' | 'recurring') | null;
+  active?: boolean | null;
   university: string;
   semester?: string | null;
+  startsOn?: string | null;
+  endsOn?: string | null;
+  seatCount?: number | null;
+  leads?: (number | User)[] | null;
+  faculty?:
+    | {
+        name: string;
+        role?: ('instructor' | 'lab_lead' | 'coordinator') | null;
+        email?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  campus?: {
+    neighborhood?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+  };
+  website?: string | null;
+  slug: string;
+  kind: 'course' | 'cohort' | 'lab';
+  relatedSubmissions?: {
+    docs?: (number | Submission)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Leftover climate-tech research. Reviewers publish or send back. Attribution and the agreement stay on the record.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "submissions".
+ */
+export interface Submission {
+  id: number;
+  title: string;
   summary: string;
+  writeup?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  handoff?: string | null;
+  leftoverSections?:
+    | (
+        | {
+            heading: string;
+            body: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'finding';
+          }
+        | {
+            heading: string;
+            body: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'method';
+          }
+        | {
+            heading: string;
+            body: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'caveat';
+          }
+        | {
+            heading: string;
+            body: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'reuse';
+          }
+      )[]
+    | null;
+  estimatedHours?: number | null;
+  reuseLevel?: ('skim' | 'reuse_method' | 'reuse_data' | 'rebuild') | null;
+  workStart?: string | null;
+  workEnd?: string | null;
+  project: number | Project;
+  topics: (number | Topic)[];
+  format: 'memo' | 'deck' | 'spreadsheet' | 'paper' | 'video';
+  stage: 'concept' | 'lab_result' | 'prototype' | 'shelved';
+  authors: string;
+  attributionUniversity: string;
+  authorList?:
+    | {
+        name: string;
+        role?: ('student' | 'professor' | 'researcher' | 'lab') | null;
+        affiliation?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * People who can edit this leftover with the submitter.
+   */
+  collaborators?: (number | User)[] | null;
+  notTakingForward?: boolean | null;
+  files?: (number | File)[] | null;
+  agreed: boolean;
+  agreementVersion?: string | null;
+  agreedAt?: string | null;
+  agreedBy?: (number | null) | User;
+  reviewerNote?: string | null;
+  slug: string;
+  visibility: 'public' | 'invited';
+  status: 'draft' | 'in_review' | 'changes_requested' | 'published';
+  revision?: number | null;
+  submittedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -180,36 +329,16 @@ export interface Topic {
   title: string;
   slug: string;
   description?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Leftover climate-tech research. Reviewers publish or send back. Attribution and the agreement stay on the record.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "submissions".
- */
-export interface Submission {
-  id: number;
-  title: string;
-  slug: string;
-  summary: string;
-  project: number | Project;
-  topics: (number | Topic)[];
-  format: 'memo' | 'deck' | 'spreadsheet' | 'paper' | 'video';
-  stage: 'concept' | 'lab_result' | 'prototype' | 'shelved';
-  visibility: 'public' | 'invited';
-  status: 'draft' | 'in_review' | 'changes_requested' | 'published';
-  authors: string;
-  attributionUniversity: string;
-  notTakingForward?: boolean | null;
-  files?: (number | File)[] | null;
-  reviewerNote?: string | null;
-  submittedBy?: (number | null) | User;
-  agreed: boolean;
-  agreementVersion?: string | null;
-  agreedAt?: string | null;
-  agreedBy?: (number | null) | User;
+  guidance?: string | null;
+  cluster?: ('systems' | 'place' | 'money' | 'tools') | null;
+  parent?: (number | null) | Topic;
+  featured?: boolean | null;
+  sortOrder?: number | null;
+  relatedSubmissions?: {
+    docs?: (number | Submission)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -221,6 +350,16 @@ export interface Submission {
  */
 export interface File {
   id: number;
+  caption?: string | null;
+  kind?: ('primary' | 'supporting' | 'appendix') | null;
+  language?: ('en' | 'es') | null;
+  pageCount?: number | null;
+  revision?: number | null;
+  internalNotes?: string | null;
+  /**
+   * Prior file this revision replaces.
+   */
+  replaces?: (number | null) | File;
   uploadedBy?: (number | null) | User;
   submission?: (number | null) | Submission;
   status?: ('draft' | 'in_review' | 'changes_requested' | 'published') | null;
@@ -236,6 +375,69 @@ export interface File {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumb?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Notes on leftover work. People and the hub assistant write here.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  submission: number | Submission;
+  file?: (number | null) | File;
+  channel: 'discussion' | 'assistant';
+  role?: ('user' | 'assistant') | null;
+  body: string;
+  author?: (number | null) | User;
+  authorName?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Proposed edits. Accepting one writes the field on the submission.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suggestions".
+ */
+export interface Suggestion {
+  id: number;
+  submission: number | Submission;
+  field: 'title' | 'summary' | 'handoff';
+  before?: string | null;
+  after: string;
+  rationale?: string | null;
+  status: 'proposed' | 'accepted' | 'rejected';
+  proposedBy?: (number | null) | User;
+  proposedByName?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Who is on a leftover right now. Heartbeat from the workspace.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "presences".
+ */
+export interface Presence {
+  id: number;
+  submission: number | Submission;
+  user: number | User;
+  userName: string;
+  action?: ('viewing' | 'editing' | 'reviewing') | null;
+  lastSeen: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -280,6 +482,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'files';
         value: number | File;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
+      } | null)
+    | ({
+        relationTo: 'suggestions';
+        value: number | Suggestion;
+      } | null)
+    | ({
+        relationTo: 'presences';
+        value: number | Presence;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -331,6 +545,7 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   university?: T;
+  title?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -355,11 +570,35 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface ProjectsSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
-  kind?: T;
+  summary?: T;
+  about?: T;
+  standing?: T;
+  active?: T;
   university?: T;
   semester?: T;
-  summary?: T;
+  startsOn?: T;
+  endsOn?: T;
+  seatCount?: T;
+  leads?: T;
+  faculty?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+        email?: T;
+        id?: T;
+      };
+  campus?:
+    | T
+    | {
+        neighborhood?: T;
+        latitude?: T;
+        longitude?: T;
+      };
+  website?: T;
+  slug?: T;
+  kind?: T;
+  relatedSubmissions?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -371,6 +610,12 @@ export interface TopicsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   description?: T;
+  guidance?: T;
+  cluster?: T;
+  parent?: T;
+  featured?: T;
+  sortOrder?: T;
+  relatedSubmissions?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -380,24 +625,76 @@ export interface TopicsSelect<T extends boolean = true> {
  */
 export interface SubmissionsSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
   summary?: T;
+  writeup?: T;
+  handoff?: T;
+  leftoverSections?:
+    | T
+    | {
+        finding?:
+          | T
+          | {
+              heading?: T;
+              body?: T;
+              id?: T;
+              blockName?: T;
+            };
+        method?:
+          | T
+          | {
+              heading?: T;
+              body?: T;
+              id?: T;
+              blockName?: T;
+            };
+        caveat?:
+          | T
+          | {
+              heading?: T;
+              body?: T;
+              id?: T;
+              blockName?: T;
+            };
+        reuse?:
+          | T
+          | {
+              heading?: T;
+              body?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  estimatedHours?: T;
+  reuseLevel?: T;
+  workStart?: T;
+  workEnd?: T;
   project?: T;
   topics?: T;
   format?: T;
   stage?: T;
-  visibility?: T;
-  status?: T;
   authors?: T;
   attributionUniversity?: T;
+  authorList?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+        affiliation?: T;
+        id?: T;
+      };
+  collaborators?: T;
   notTakingForward?: T;
   files?: T;
-  reviewerNote?: T;
-  submittedBy?: T;
   agreed?: T;
   agreementVersion?: T;
   agreedAt?: T;
   agreedBy?: T;
+  reviewerNote?: T;
+  slug?: T;
+  visibility?: T;
+  status?: T;
+  revision?: T;
+  submittedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -406,6 +703,13 @@ export interface SubmissionsSelect<T extends boolean = true> {
  * via the `definition` "files_select".
  */
 export interface FilesSelect<T extends boolean = true> {
+  caption?: T;
+  kind?: T;
+  language?: T;
+  pageCount?: T;
+  revision?: T;
+  internalNotes?: T;
+  replaces?: T;
   uploadedBy?: T;
   submission?: T;
   status?: T;
@@ -421,6 +725,64 @@ export interface FilesSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumb?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  submission?: T;
+  file?: T;
+  channel?: T;
+  role?: T;
+  body?: T;
+  author?: T;
+  authorName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suggestions_select".
+ */
+export interface SuggestionsSelect<T extends boolean = true> {
+  submission?: T;
+  field?: T;
+  before?: T;
+  after?: T;
+  rationale?: T;
+  status?: T;
+  proposedBy?: T;
+  proposedByName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "presences_select".
+ */
+export interface PresencesSelect<T extends boolean = true> {
+  submission?: T;
+  user?: T;
+  userName?: T;
+  action?: T;
+  lastSeen?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

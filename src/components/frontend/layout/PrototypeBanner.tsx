@@ -4,6 +4,8 @@ import React from 'react'
 import styled from 'styled-components'
 import Link from 'next/link'
 
+import { pageWidth } from '@/components/frontend/layout/Containers'
+
 const Bar = styled.div`
   background: ${({ theme }) => theme.colors.surface.gold};
   color: ${({ theme }) => theme.colors.surface.ink};
@@ -14,8 +16,7 @@ const Bar = styled.div`
 `
 
 const Inner = styled.div`
-  width: min(100% - ${({ theme }) => theme.spacing(8)}, ${({ theme }) => theme.layout.maxWidth});
-  margin-inline: auto;
+  ${pageWidth};
   padding-block: ${({ theme }) => theme.spacing(2)};
   display: flex;
   justify-content: space-between;
@@ -26,6 +27,11 @@ const Inner = styled.div`
 const Quiet = styled(Link)`
   text-decoration: underline;
   text-underline-offset: ${({ theme }) => theme.spacing(1)};
+  transition: color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.content.accent};
+  }
 `
 
 const PrototypeBannerComponent = () => (

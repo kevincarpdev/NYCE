@@ -1,14 +1,15 @@
 'use client'
 
 import React from 'react'
-import { DownloadSimple, LockSimple } from '@phosphor-icons/react'
+import { LockSimple } from '@phosphor-icons/react'
 import styled from 'styled-components'
 
 import { Badge } from '@/components/frontend/ui/Badge'
 import { Button } from '@/components/frontend/ui/Button'
 import { PageSection, SectionWrapper } from '@/components/frontend/layout/Containers'
+import { FilePreview } from '@/components/frontend/workspace/FilePreview'
 import { formatDate } from '@/lib/dates'
-import { formatLabels, stageLabels, visibilityLabels } from '@/lib/labels'
+import { formatLabels, reuseLabels, sectionLabels, stageLabels, visibilityLabels } from '@/lib/labels'
 import type { SubmissionCard as Item } from '@/lib/queries'
 import { theme } from '@/theme/theme'
 
@@ -37,26 +38,17 @@ const Lock = styled.div`
   gap: ${({ theme }) => theme.spacing(4)};
 `
 
-const Files = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: ${({ theme }) => theme.spacing(3)};
-`
-
-const FileLink = styled.a`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing(2)};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.content.accent};
-`
-
 const Note = styled.aside`
   background: ${({ theme }) => theme.colors.surface.gold};
   color: ${({ theme }) => theme.colors.surface.ink};
   padding: ${({ theme }) => theme.spacing(5)};
+`
+
+const Block = styled.article`
+  background: ${({ theme }) => theme.colors.surface.raised};
+  padding: ${({ theme }) => theme.spacing(5)};
+  display: grid;
+  gap: ${({ theme }) => theme.spacing(2)};
 `
 
 type DetailProps = {
@@ -78,6 +70,7 @@ const SubmissionDetailComponent = ({ item, signedIn }: DetailProps) => {
           <Badge>{formatLabels[item.format]}</Badge>
           <Badge>{stageLabels[item.stage]}</Badge>
           {item.project ? <Badge>{item.project.title}</Badge> : null}
+          {item.reuseLevel ? <Badge>{reuseLabels[item.reuseLevel]}</Badge> : null}
         </Tags>
         <Title>{item.title}</Title>
         <p>
@@ -100,16 +93,29 @@ const SubmissionDetailComponent = ({ item, signedIn }: DetailProps) => {
         ) : (
           <>
             {item.summary ? <Body>{item.summary}</Body> : null}
-            <Files>
-              {item.files.map((file) => (
-                <li key={file.id}>
-                  <FileLink href={file.url || `/api/files/file/${file.filename}`} rel="noreferrer">
-                    <DownloadSimple size={theme.icons.md} />
-                    {file.filename}
-                  </FileLink>
-                </li>
-              ))}
-            </Files>
+            {item.writeup && item.writeup !== item.summary ? <p>{item.writeup}</p> : null}
+            {item.handoff ? (
+              <Block>
+                <strong>Handoff</strong>
+                <p>{item.handoff}</p>
+              </Block>
+            ) : null}
+            {item.leftoverSections.map((section) => (
+              <Block key={section.id || section.heading}>
+                <strong>
+                  {sectionLabels[section.blockType] || section.blockType} · {section.heading}
+                </strong>
+                <p>{section.body}</p>
+              </Block>
+            ))}
+            {item.files.map((file) => (
+              <FilePreview file={file} key={file.id} />
+            ))}
+            {signedIn ? (
+              <Button href={`/library/${item.slug}/workspace`} variant="ink">
+                Open workspace
+              </Button>
+            ) : null}
           </>
         )}
         <Tags>

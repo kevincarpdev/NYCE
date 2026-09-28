@@ -9,6 +9,8 @@ const isOwnerOrStaff: FieldAccess = ({ req: { user }, doc }) =>
 
 const publishedBodyAccess: FieldAccess = ({ req: { user }, doc }) => {
   if (isStaff(user) || sameId(user?.id, ownerId(doc?.submittedBy))) return true
+  const collaborators = Array.isArray(doc?.collaborators) ? doc.collaborators : []
+  if (collaborators.some((entry: unknown) => sameId(user?.id, ownerId(entry)))) return true
   if (doc?.status !== 'published') return false
   if (doc?.visibility === 'public') return true
   return Boolean(user)
@@ -21,7 +23,11 @@ const readSubmissions: Access = ({ req: { user } }) => {
     return where
   }
   const where: Where = {
-    or: [{ status: { equals: 'published' } }, { submittedBy: { equals: user.id } }],
+    or: [
+      { status: { equals: 'published' } },
+      { submittedBy: { equals: user.id } },
+      { collaborators: { contains: user.id } },
+    ],
   }
   return where
 }
@@ -30,10 +36,7 @@ const updateSubmissions: Access = ({ req: { user } }) => {
   if (isStaff(user)) return true
   if (!user || !canSubmitWork(user)) return false
   const where: Where = {
-    and: [
-      { submittedBy: { equals: user.id } },
-      { status: { in: ['draft', 'changes_requested'] } },
-    ],
+    or: [{ submittedBy: { equals: user.id } }, { collaborators: { contains: user.id } }],
   }
   return where
 }
@@ -43,15 +46,19 @@ export const Submissions: CollectionConfig = {
   admin: {
     group: 'Library',
     useAsTitle: 'title',
-    description: 'Leftover climate-tech research. Reviewers publish or send back. Attribution and the agreement stay on the record.',
+    description:
+      'Leftover climate-tech research. Reviewers publish or send back. Attribution and the agreement stay on the record.',
     defaultColumns: ['title', 'status', 'visibility', 'project', 'agreedBy', 'agreedAt'],
-    listSearchableFields: ['title', 'authors', 'summary'],
+    listSearchableFields: ['title', 'authors', 'summary', 'handoff'],
     components: {
       beforeListTable: ['/components/admin/ReviewQueueLink'],
       edit: {
         beforeDocumentControls: ['/components/admin/ReviewActions'],
       },
     },
+  },
+  versions: {
+    maxPerDoc: 30,
   },
   access: {
     create: ({ req: { user } }) => canSubmitWork(user),
@@ -69,7 +76,7 @@ export const Submissions: CollectionConfig = {
       },
     ],
     beforeChange: [
-      ({ data, req, operation }) => {
+      ({ data, req, operation, originalDoc }) => {
         if (!data) return data
         if (operation === 'create' && req.user && !data.submittedBy) {
           data.submittedBy = req.user.id
@@ -84,6 +91,18 @@ export const Submissions: CollectionConfig = {
         }
         if (operation === 'create' && !data.agreed && !isStaff(req.user)) {
           throw new Error('Agree to the attribution terms before submitting.')
+        }
+        if (operation === 'create') {
+          data.revision = 1
+        }
+        if (operation === 'update' && originalDoc) {
+          const current = Number(originalDoc.revision || 0)
+          if (data.revision != null && Number(data.revision) !== current) {
+            throw new Error(
+              'Someone else saved this while you were editing. Reload, then apply your change.',
+            )
+          }
+          data.revision = current + 1
         }
         return data
       },
@@ -113,58 +132,239 @@ export const Submissions: CollectionConfig = {
   },
   fields: [
     {
-      name: 'title',
-      type: 'text',
-      required: true,
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Work',
+          fields: [
+            { name: 'title', type: 'text', required: true },
+            {
+              name: 'summary',
+              type: 'textarea',
+              required: true,
+              access: { read: publishedBodyAccess },
+            },
+            {
+              name: 'writeup',
+              type: 'richText',
+              access: { read: publishedBodyAccess },
+            },
+            {
+              name: 'handoff',
+              type: 'textarea',
+              label: 'What next semester should reuse',
+              access: { read: publishedBodyAccess },
+            },
+            {
+              name: 'leftoverSections',
+              type: 'blocks',
+              access: { read: publishedBodyAccess },
+              blocks: [
+                {
+                  slug: 'finding',
+                  labels: { singular: 'Finding', plural: 'Findings' },
+                  fields: [
+                    { name: 'heading', type: 'text', required: true },
+                    { name: 'body', type: 'textarea', required: true },
+                  ],
+                },
+                {
+                  slug: 'method',
+                  labels: { singular: 'Method', plural: 'Methods' },
+                  fields: [
+                    { name: 'heading', type: 'text', required: true },
+                    { name: 'body', type: 'textarea', required: true },
+                  ],
+                },
+                {
+                  slug: 'caveat',
+                  labels: { singular: 'Caveat', plural: 'Caveats' },
+                  fields: [
+                    { name: 'heading', type: 'text', required: true },
+                    { name: 'body', type: 'textarea', required: true },
+                  ],
+                },
+                {
+                  slug: 'reuse',
+                  labels: { singular: 'Reuse this', plural: 'Reuse this' },
+                  fields: [
+                    { name: 'heading', type: 'text', required: true },
+                    { name: 'body', type: 'textarea', required: true },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                { name: 'estimatedHours', type: 'number', min: 0 },
+                {
+                  name: 'reuseLevel',
+                  type: 'radio',
+                  defaultValue: 'reuse_method',
+                  options: [
+                    { label: 'Read it, then move on', value: 'skim' },
+                    { label: 'Reuse the method', value: 'reuse_method' },
+                    { label: 'Reuse the numbers', value: 'reuse_data' },
+                    { label: 'Rebuild from the leftover', value: 'rebuild' },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                { name: 'workStart', type: 'date' },
+                { name: 'workEnd', type: 'date' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Classify',
+          fields: [
+            {
+              name: 'project',
+              type: 'relationship',
+              relationTo: 'projects',
+              required: true,
+            },
+            {
+              name: 'topics',
+              type: 'relationship',
+              relationTo: 'topics',
+              hasMany: true,
+              required: true,
+            },
+            {
+              name: 'format',
+              type: 'select',
+              required: true,
+              options: [
+                { label: 'Memo', value: 'memo' },
+                { label: 'Deck', value: 'deck' },
+                { label: 'Spreadsheet', value: 'spreadsheet' },
+                { label: 'Paper', value: 'paper' },
+                { label: 'Video', value: 'video' },
+              ],
+            },
+            {
+              name: 'stage',
+              type: 'select',
+              required: true,
+              options: [
+                { label: 'Concept', value: 'concept' },
+                { label: 'Lab result', value: 'lab_result' },
+                { label: 'Prototype', value: 'prototype' },
+                { label: 'Shelved', value: 'shelved' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'People',
+          fields: [
+            { name: 'authors', type: 'text', required: true },
+            { name: 'attributionUniversity', type: 'text', required: true },
+            {
+              name: 'authorList',
+              type: 'array',
+              fields: [
+                { name: 'name', type: 'text', required: true },
+                {
+                  name: 'role',
+                  type: 'select',
+                  options: [
+                    { label: 'Student', value: 'student' },
+                    { label: 'Professor', value: 'professor' },
+                    { label: 'Researcher', value: 'researcher' },
+                    { label: 'Lab', value: 'lab' },
+                  ],
+                },
+                { name: 'affiliation', type: 'text' },
+              ],
+            },
+            {
+              name: 'collaborators',
+              type: 'relationship',
+              relationTo: 'users',
+              hasMany: true,
+              admin: {
+                description: 'People who can edit this leftover with the submitter.',
+              },
+            },
+            {
+              name: 'notTakingForward',
+              type: 'checkbox',
+              defaultValue: true,
+              label: 'We are not taking this work forward',
+            },
+          ],
+        },
+        {
+          label: 'Files',
+          fields: [
+            {
+              name: 'files',
+              type: 'relationship',
+              relationTo: 'files',
+              hasMany: true,
+              access: { read: publishedBodyAccess },
+            },
+          ],
+        },
+        {
+          label: 'Agreement',
+          fields: [
+            {
+              name: 'agreed',
+              type: 'checkbox',
+              required: true,
+              label: 'I agree to the attribution terms',
+            },
+            {
+              name: 'agreementVersion',
+              type: 'text',
+              admin: { readOnly: true },
+            },
+            {
+              name: 'agreedAt',
+              type: 'date',
+              admin: {
+                readOnly: true,
+                date: { pickerAppearance: 'dayAndTime' },
+              },
+            },
+            {
+              name: 'agreedBy',
+              type: 'relationship',
+              relationTo: 'users',
+              admin: { readOnly: true },
+            },
+          ],
+        },
+        {
+          label: 'Review',
+          fields: [
+            {
+              name: 'reviewerNote',
+              type: 'textarea',
+              access: {
+                read: isOwnerOrStaff,
+                update: ({ req: { user } }) => isStaff(user),
+              },
+            },
+          ],
+        },
+      ],
     },
     {
       name: 'slug',
       type: 'text',
       required: true,
       unique: true,
+      index: true,
       admin: { position: 'sidebar' },
-    },
-    {
-      name: 'summary',
-      type: 'textarea',
-      required: true,
-      access: { read: publishedBodyAccess },
-    },
-    {
-      name: 'project',
-      type: 'relationship',
-      relationTo: 'projects',
-      required: true,
-    },
-    {
-      name: 'topics',
-      type: 'relationship',
-      relationTo: 'topics',
-      hasMany: true,
-      required: true,
-    },
-    {
-      name: 'format',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'Memo', value: 'memo' },
-        { label: 'Deck', value: 'deck' },
-        { label: 'Spreadsheet', value: 'spreadsheet' },
-        { label: 'Paper', value: 'paper' },
-        { label: 'Video', value: 'video' },
-      ],
-    },
-    {
-      name: 'stage',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'Concept', value: 'concept' },
-        { label: 'Lab result', value: 'lab_result' },
-        { label: 'Prototype', value: 'prototype' },
-        { label: 'Shelved', value: 'shelved' },
-      ],
     },
     {
       name: 'visibility',
@@ -194,65 +394,13 @@ export const Submissions: CollectionConfig = {
       },
     },
     {
-      name: 'authors',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'attributionUniversity',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'notTakingForward',
-      type: 'checkbox',
-      defaultValue: true,
-      label: 'We are not taking this work forward',
-    },
-    {
-      name: 'files',
-      type: 'relationship',
-      relationTo: 'files',
-      hasMany: true,
-      access: { read: publishedBodyAccess },
-    },
-    {
-      name: 'reviewerNote',
-      type: 'textarea',
-      admin: { position: 'sidebar' },
-      access: {
-        read: isOwnerOrStaff,
-        update: ({ req: { user } }) => isStaff(user),
-      },
+      name: 'revision',
+      type: 'number',
+      defaultValue: 1,
+      admin: { position: 'sidebar', readOnly: true },
     },
     {
       name: 'submittedBy',
-      type: 'relationship',
-      relationTo: 'users',
-      admin: { readOnly: true, position: 'sidebar' },
-    },
-    {
-      name: 'agreed',
-      type: 'checkbox',
-      required: true,
-      label: 'I agree to the attribution terms',
-    },
-    {
-      name: 'agreementVersion',
-      type: 'text',
-      admin: { readOnly: true, position: 'sidebar' },
-    },
-    {
-      name: 'agreedAt',
-      type: 'date',
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-        date: { pickerAppearance: 'dayAndTime' },
-      },
-    },
-    {
-      name: 'agreedBy',
       type: 'relationship',
       relationTo: 'users',
       admin: { readOnly: true, position: 'sidebar' },

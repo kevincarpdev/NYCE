@@ -10,11 +10,18 @@ import { Projects } from './collections/Projects'
 import { Topics } from './collections/Topics'
 import { Submissions } from './collections/Submissions'
 import { Files } from './collections/Files'
+import { Comments } from './collections/Comments'
+import { Suggestions } from './collections/Suggestions'
+import { Presences } from './collections/Presences'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
 export default buildConfig({
+  serverURL,
+  cors: [serverURL],
+  csrf: [serverURL],
   admin: {
     user: Users.slug,
     importMap: {
@@ -31,7 +38,7 @@ export default buildConfig({
       beforeDashboard: ['/components/admin/BeforeDashboard'],
     },
   },
-  collections: [Users, Projects, Topics, Submissions, Files],
+  collections: [Users, Projects, Topics, Submissions, Files, Comments, Suggestions, Presences],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

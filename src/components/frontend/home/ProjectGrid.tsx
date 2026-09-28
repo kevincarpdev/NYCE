@@ -24,6 +24,12 @@ const Card = styled(Link)`
   display: grid;
   gap: ${({ theme }) => theme.spacing(3)};
   height: 100%;
+  transition: box-shadow ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:hover {
+    box-shadow: 0 ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(4)}
+      ${({ theme }) => theme.colors.focus.ring};
+  }
 `
 
 const Title = styled.h3`

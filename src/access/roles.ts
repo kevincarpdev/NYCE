@@ -14,6 +14,8 @@ export const canSubmitWork = (user: AccessUser) =>
 
 export const canUseAdmin = (user: AccessUser) => isStaff(user)
 
+export const isSignedIn = (user: AccessUser) => Boolean(user)
+
 export const sameId = (left: unknown, right: unknown) =>
   left != null && right != null && String(left) === String(right)
 

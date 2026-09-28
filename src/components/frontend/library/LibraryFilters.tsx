@@ -7,18 +7,11 @@ import styled from 'styled-components'
 import { libraryHref } from '@/lib/libraryHref'
 import { formatLabels, stageLabels } from '@/lib/labels'
 import type { ProjectCard, TopicCard } from '@/lib/queries'
+import { Control } from '@/components/frontend/ui/controls'
 
 const Wrap = styled.form`
   display: grid;
   gap: ${({ theme }) => theme.spacing(4)};
-`
-
-const Search = styled.input`
-  width: 100%;
-  border: 1px solid ${({ theme }) => theme.colors.border.strong};
-  background: ${({ theme }) => theme.colors.surface.raised};
-  color: ${({ theme }) => theme.colors.content.primary};
-  padding: ${({ theme }) => theme.spacing(3)};
 `
 
 const Chips = styled.div`
@@ -29,12 +22,26 @@ const Chips = styled.div`
 
 const Chip = styled(Link)<{ $active?: boolean }>`
   padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(3)}`};
+  border: 1px solid
+    ${({ theme, $active }) =>
+      $active ? theme.colors.surface.brand : theme.colors.border.subtle};
   background: ${({ theme, $active }) =>
     $active ? theme.colors.surface.brand : theme.colors.surface.raised};
   color: ${({ theme, $active }) =>
     $active ? theme.colors.content.inverse : theme.colors.content.accent};
   font-size: ${({ theme }) => theme.typography.fontSizes.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  transition:
+    background-color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out},
+    color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out},
+    border-color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:hover {
+    background: ${({ theme, $active }) =>
+      $active ? theme.colors.surface.ink : theme.colors.surface.wash};
+    border-color: ${({ theme, $active }) =>
+      $active ? theme.colors.surface.ink : theme.colors.border.strong};
+  }
 `
 
 type Filters = {
@@ -60,7 +67,7 @@ const LibraryFiltersComponent = ({ topics, projects, current }: FilterProps) => 
       {current.project ? <input name="project" type="hidden" value={current.project} /> : null}
       {current.format ? <input name="format" type="hidden" value={current.format} /> : null}
       {current.stage ? <input name="stage" type="hidden" value={current.stage} /> : null}
-      <Search defaultValue={current.q} name="q" placeholder="Search titles and authors" />
+      <Control defaultValue={current.q} name="q" placeholder="Search titles and authors" />
       <Chips>
         <Chip $active={!current.topic} href={next({ topic: undefined })}>
           All topics

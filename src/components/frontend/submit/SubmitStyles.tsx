@@ -2,6 +2,10 @@
 
 import styled from 'styled-components'
 
+import { Area, Control, Select } from '@/components/frontend/ui/controls'
+
+export { Area, Control, Select }
+
 export const Form = styled.form`
   display: grid;
   gap: ${({ theme }) => theme.spacing(10)};
@@ -26,25 +30,6 @@ export const Field = styled.label`
   gap: ${({ theme }) => theme.spacing(2)};
   font-size: ${({ theme }) => theme.typography.fontSizes.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-`
-
-export const Control = styled.input`
-  border: 1px solid ${({ theme }) => theme.colors.border.strong};
-  padding: ${({ theme }) => theme.spacing(3)};
-  background: ${({ theme }) => theme.colors.surface.raised};
-`
-
-export const Area = styled.textarea`
-  border: 1px solid ${({ theme }) => theme.colors.border.strong};
-  padding: ${({ theme }) => theme.spacing(3)};
-  background: ${({ theme }) => theme.colors.surface.raised};
-  min-height: ${({ theme }) => theme.spacing(28)};
-`
-
-export const Select = styled.select`
-  border: 1px solid ${({ theme }) => theme.colors.border.strong};
-  padding: ${({ theme }) => theme.spacing(3)};
-  background: ${({ theme }) => theme.colors.surface.raised};
 `
 
 export const Legal = styled.pre`

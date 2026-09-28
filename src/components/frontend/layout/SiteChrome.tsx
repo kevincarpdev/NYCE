@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { usePathname } from 'next/navigation'
 import styled from 'styled-components'
 
 import type { SessionUser } from '@/lib/session'
@@ -14,8 +15,10 @@ const Page = styled.div`
   flex-direction: column;
 `
 
-const Main = styled.main`
+const Main = styled.main<{ $auth: boolean }>`
   flex: 1;
+  display: ${({ $auth }) => ($auth ? 'flex' : 'block')};
+  flex-direction: column;
 `
 
 type ChromeProps = {
@@ -23,14 +26,19 @@ type ChromeProps = {
   children: React.ReactNode
 }
 
-const SiteChromeComponent = ({ user, children }: ChromeProps) => (
-  <Page>
-    <PrototypeBanner />
-    <SiteHeader user={user} />
-    <Main>{children}</Main>
-    <SiteFooter />
-  </Page>
-)
+const SiteChromeComponent = ({ user, children }: ChromeProps) => {
+  const pathname = usePathname()
+  const isAuth = pathname === '/sign-in'
+
+  return (
+    <Page>
+      <PrototypeBanner />
+      {isAuth ? null : <SiteHeader user={user} />}
+      <Main $auth={isAuth}>{children}</Main>
+      {isAuth ? null : <SiteFooter />}
+    </Page>
+  )
+}
 
 export const SiteChrome = React.memo(SiteChromeComponent)
 SiteChrome.displayName = 'SiteChrome'

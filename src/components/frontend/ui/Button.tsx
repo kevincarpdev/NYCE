@@ -17,6 +17,21 @@ const shared = css`
   text-transform: uppercase;
   cursor: pointer;
   border: 1px solid transparent;
+  transition:
+    background-color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out},
+    color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out},
+    border-color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out},
+    box-shadow ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.colors.focus.ring};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: ${({ theme }) => theme.opacity.disabled};
+  }
 `
 
 const primary = css`
@@ -24,6 +39,11 @@ const primary = css`
   background: ${({ theme }) => theme.colors.surface.brand};
   color: ${({ theme }) => theme.colors.content.inverse};
   border-color: ${({ theme }) => theme.colors.surface.brand};
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.surface.ink};
+    border-color: ${({ theme }) => theme.colors.surface.ink};
+  }
 `
 
 const gold = css`
@@ -31,6 +51,12 @@ const gold = css`
   background: ${({ theme }) => theme.colors.surface.gold};
   color: ${({ theme }) => theme.colors.surface.ink};
   border-color: ${({ theme }) => theme.colors.surface.gold};
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.surface.brand};
+    color: ${({ theme }) => theme.colors.content.inverse};
+    border-color: ${({ theme }) => theme.colors.surface.brand};
+  }
 `
 
 const ghost = css`
@@ -38,6 +64,12 @@ const ghost = css`
   background: transparent;
   color: ${({ theme }) => theme.colors.content.inverse};
   border-color: ${({ theme }) => theme.colors.content.inverse};
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.surface.gold};
+    color: ${({ theme }) => theme.colors.surface.ink};
+    border-color: ${({ theme }) => theme.colors.surface.gold};
+  }
 `
 
 const ink = css`
@@ -45,6 +77,12 @@ const ink = css`
   background: ${({ theme }) => theme.colors.surface.raised};
   color: ${({ theme }) => theme.colors.content.accent};
   border-color: ${({ theme }) => theme.colors.border.strong};
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.surface.brand};
+    color: ${({ theme }) => theme.colors.content.inverse};
+    border-color: ${({ theme }) => theme.colors.surface.brand};
+  }
 `
 
 const variants = { primary, gold, ghost, ink }

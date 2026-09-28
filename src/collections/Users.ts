@@ -19,7 +19,7 @@ export const Users: CollectionConfig = {
     read: ({ req: { user } }) => {
       if (isStaff(user)) return true
       if (!user) return false
-      return { id: { equals: user.id } }
+      return true
     },
     update: ({ req: { user } }) => {
       if (isStaff(user)) return true
@@ -54,6 +54,11 @@ export const Users: CollectionConfig = {
     {
       name: 'university',
       type: 'text',
+    },
+    {
+      name: 'title',
+      type: 'text',
+      label: 'Role at the university',
     },
   ],
 }

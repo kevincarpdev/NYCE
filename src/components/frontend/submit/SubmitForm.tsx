@@ -31,6 +31,7 @@ const SubmitFormComponent = ({ projects, topics }: SubmitProps) => {
   const [error, setError] = useState('')
   const [title, setTitle] = useState('')
   const [summary, setSummary] = useState('')
+  const [handoff, setHandoff] = useState('')
   const [authors, setAuthors] = useState('')
   const [university, setUniversity] = useState('Stony Brook University')
   const [project, setProject] = useState(projects[0]?.id || '')
@@ -46,6 +47,7 @@ const SubmitFormComponent = ({ projects, topics }: SubmitProps) => {
     setSummary(
       'A walking route and cheap thermometer protocol for mapping heat along the Battery. We are not taking this forward. Next studio can reuse the route.',
     )
+    setHandoff('Reuse the walking route and the cheap thermometer protocol. Do not restart the sensor company.')
     setAuthors('Amina Ruiz')
     setFormat('memo')
     setStage('concept')
@@ -84,6 +86,7 @@ const SubmitFormComponent = ({ projects, topics }: SubmitProps) => {
       body: JSON.stringify({
         title,
         summary,
+        handoff,
         authors,
         attributionUniversity: university,
         project: Number(project),
@@ -122,6 +125,10 @@ const SubmitFormComponent = ({ projects, topics }: SubmitProps) => {
         <Field>
           Summary
           <Area onChange={(event) => setSummary(event.target.value)} required value={summary} />
+        </Field>
+        <Field>
+          What next semester should reuse
+          <Area onChange={(event) => setHandoff(event.target.value)} value={handoff} />
         </Field>
         <Field>
           Authors to credit

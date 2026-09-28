@@ -7,8 +7,9 @@ export const Projects: CollectionConfig = {
   admin: {
     group: 'Library',
     useAsTitle: 'title',
-    description: 'A course, cohort, or lab. Files sit in a project so later students can ask what last semester left behind.',
-    defaultColumns: ['title', 'kind', 'university', 'semester'],
+    description:
+      'A course, cohort, or lab. Files sit in a project so later students can ask what last semester left behind.',
+    defaultColumns: ['title', 'kind', 'university', 'semester', 'active'],
   },
   access: {
     read: () => true,
@@ -18,15 +19,92 @@ export const Projects: CollectionConfig = {
   },
   fields: [
     {
-      name: 'title',
-      type: 'text',
-      required: true,
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Overview',
+          fields: [
+            { name: 'title', type: 'text', required: true },
+            { name: 'summary', type: 'textarea', required: true },
+            {
+              name: 'about',
+              type: 'richText',
+              label: 'About this project',
+            },
+            {
+              name: 'standing',
+              type: 'radio',
+              defaultValue: 'term',
+              options: [
+                { label: 'One term', value: 'term' },
+                { label: 'Recurring', value: 'recurring' },
+              ],
+            },
+            { name: 'active', type: 'checkbox', defaultValue: true },
+          ],
+        },
+        {
+          label: 'Calendar',
+          fields: [
+            { name: 'university', type: 'text', required: true },
+            { name: 'semester', type: 'text' },
+            { name: 'startsOn', type: 'date' },
+            { name: 'endsOn', type: 'date' },
+            { name: 'seatCount', type: 'number', min: 0 },
+          ],
+        },
+        {
+          label: 'People',
+          fields: [
+            {
+              name: 'leads',
+              type: 'relationship',
+              relationTo: 'users',
+              hasMany: true,
+            },
+            {
+              name: 'faculty',
+              type: 'array',
+              labels: { singular: 'Person', plural: 'People' },
+              fields: [
+                { name: 'name', type: 'text', required: true },
+                {
+                  name: 'role',
+                  type: 'select',
+                  options: [
+                    { label: 'Instructor', value: 'instructor' },
+                    { label: 'Lab lead', value: 'lab_lead' },
+                    { label: 'Coordinator', value: 'coordinator' },
+                  ],
+                },
+                { name: 'email', type: 'email' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Place',
+          fields: [
+            {
+              name: 'campus',
+              type: 'group',
+              fields: [
+                { name: 'neighborhood', type: 'text' },
+                { name: 'latitude', type: 'number' },
+                { name: 'longitude', type: 'number' },
+              ],
+            },
+            { name: 'website', type: 'text' },
+          ],
+        },
+      ],
     },
     {
       name: 'slug',
       type: 'text',
       required: true,
       unique: true,
+      index: true,
       admin: { position: 'sidebar' },
     },
     {
@@ -41,18 +119,11 @@ export const Projects: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     {
-      name: 'university',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'semester',
-      type: 'text',
-    },
-    {
-      name: 'summary',
-      type: 'textarea',
-      required: true,
+      name: 'relatedSubmissions',
+      type: 'join',
+      collection: 'submissions',
+      on: 'project',
+      admin: { position: 'sidebar' },
     },
   ],
 }
