@@ -67,8 +67,12 @@ const Quiet = styled(Link)`
   }
 `
 
-const pickAccount = (reason?: string, user?: SessionUser | null): DemoAccount => {
+const pickAccount = (reason?: string, user?: SessionUser | null, role?: string): DemoAccount => {
   if (reason === 'admin') return reviewerAccount
+  if (role) {
+    const match = demoAccounts.find((account) => account.email.startsWith(`${role}@`))
+    if (match) return match
+  }
   if (user) {
     const match = demoAccounts.find((account) => account.email === user.email)
     if (match) return match
@@ -87,12 +91,13 @@ const resolveTarget = (account: DemoAccount, nextPath: string) => {
 type SignInProps = {
   nextPath: string
   reason?: string
+  role?: string
   user?: SessionUser | null
 }
 
-const SignInFormComponent = ({ nextPath, reason, user }: SignInProps) => {
+const SignInFormComponent = ({ nextPath, reason, role, user }: SignInProps) => {
   const router = useRouter()
-  const initial = useMemo(() => pickAccount(reason, user), [reason, user])
+  const initial = useMemo(() => pickAccount(reason, user, role), [reason, user, role])
   const [selected, setSelected] = useState<DemoAccount>(initial)
   const [email, setEmail] = useState<string>(initial.email)
   const [password, setPassword] = useState(DEMO_PASSWORD)

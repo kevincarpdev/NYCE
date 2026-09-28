@@ -21,7 +21,7 @@ const Bar = styled.div`
   min-width: 0;
   background: ${({ theme }) => theme.colors.surface.canvas};
   color: ${({ theme }) => theme.colors.surface.ink};
-  padding-block: ${({ theme }) => theme.spacing(3)};
+  padding-block: ${({ theme }) => theme.spacing(6)};
 `
 
 const Track = styled.div`
@@ -37,7 +37,7 @@ const Track = styled.div`
 `
 
 const Item = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSizes.xs};
+  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
   text-transform: uppercase;

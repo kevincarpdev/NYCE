@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import styled from 'styled-components'
 
 import type { SessionUser } from '@/lib/session'
-import { PrototypeBanner } from '@/components/frontend/layout/PrototypeBanner'
+import { AnnouncementBar } from '@/components/frontend/layout/AnnouncementBar'
 import { SiteFooter } from '@/components/frontend/layout/SiteFooter'
 import { SiteHeader } from '@/components/frontend/layout/SiteHeader'
 
@@ -32,7 +32,7 @@ const SiteChromeComponent = ({ user, children }: ChromeProps) => {
 
   return (
     <Page>
-      <PrototypeBanner />
+      <AnnouncementBar />
       {isAuth ? null : <SiteHeader user={user} />}
       <Main $auth={isAuth}>{children}</Main>
       {isAuth ? null : <SiteFooter />}

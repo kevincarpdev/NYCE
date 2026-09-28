@@ -28,6 +28,9 @@ export const hubCopy = {
   ssoLabel: 'Continue with university SSO',
   ssoHint: 'Month 1',
   browse: 'Browse the library without signing in',
+  announcement: 'Prototype · sample content',
+  announcementLink: 'How to look at this',
+  wordmark: 'Knowledge Hub',
 } as const
 
 export const partners = [
@@ -41,4 +44,46 @@ export const partners = [
   'Climate Jobs NY',
   'ABNY',
   'BCG',
+] as const
+
+export const exchangeLinks = {
+  site: 'https://nyce.org',
+  story: 'https://nyce.org/our-story',
+  campus: 'https://nyce.org/climate-campus',
+  partners: 'https://nyce.org/the-partners',
+  careers: 'https://nyce.org/careers',
+  news: 'https://nyce.org/news',
+  faq: 'https://nyce.org/faqs',
+  give: 'https://the-ny-climate-exchange.givecloud.co/fundraising/forms/8NDR96EK',
+  subscribe: 'https://share.hsforms.com/1cWm8ZT5qTROIjawaYrEX7gt1767',
+  email: 'mailto:info@nyclimateexchange.org',
+  emailLabel: 'info@nyclimateexchange.org',
+} as const
+
+export const socialLinks = [
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/nyclimateexchange/',
+    icon: 'instagram' as const,
+  },
+  {
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/company/nyexchange',
+    icon: 'linkedin' as const,
+  },
+  {
+    label: 'YouTube',
+    href: 'https://www.youtube.com/@NewYorkClimateExchange',
+    icon: 'youtube' as const,
+  },
+] as const
+
+export const exchangeFacts = {
+  partners: 48,
+} as const
+
+export const addressLines = [
+  'The New York Climate Exchange',
+  '10 South Street, Slip 7',
+  'New York, NY 10004',
 ] as const

@@ -3,7 +3,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { PageSection, SectionWrapper } from '@/components/frontend/layout/Containers'
+import { PageSection, SectionWrapper, type SectionTone } from '@/components/frontend/layout/Containers'
 import { SubmissionCard } from '@/components/frontend/library/SubmissionCard'
 import type { SubmissionCard as Item } from '@/lib/queries'
 
@@ -22,17 +22,19 @@ const Grid = styled.div`
 
 const Heading = styled.h2`
   margin: 0;
-  font-size: ${({ theme }) => theme.typography.fontSizes.xxl};
+  font-size: ${({ theme }) => theme.typography.fontSizes.section};
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
 `
 
 type ListProps = {
   title: string
   items: Item[]
+  tone?: SectionTone
 }
 
-const SubmissionGridComponent = ({ title, items }: ListProps) => (
-  <PageSection>
+const SubmissionGridComponent = ({ title, items, tone = 'paper' }: ListProps) => (
+  <PageSection tone={tone}>
     <SectionWrapper>
       <Heading>{title}</Heading>
       {items.length ? (

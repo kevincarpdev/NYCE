@@ -8,7 +8,7 @@ import { StyledComponentsRegistry } from '@/theme/registry'
 
 const onest = Onest({
   subsets: ['latin'],
-  weight: ['500', '700'],
+  weight: ['400', '500', '700'],
   variable: '--font-onest',
   display: 'swap',
 })

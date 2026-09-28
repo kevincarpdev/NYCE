@@ -4,15 +4,19 @@ import React from 'react'
 import Link from 'next/link'
 import styled, { css } from 'styled-components'
 
-const shared = css`
+const shared = css<{ $size: 'md' | 'lg' }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: ${({ theme }) => theme.spacing(2)};
   border-radius: ${({ theme }) => theme.radii.none};
-  padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(5)}`};
-  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  padding: ${({ theme, $size }) =>
+    $size === 'lg'
+      ? `${theme.spacing(6)} ${theme.spacing(9)}`
+      : `${theme.spacing(3)} ${theme.spacing(5)}`};
+  font-size: ${({ theme, $size }) =>
+    $size === 'lg' ? theme.typography.fontSizes.button : theme.typography.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
   text-transform: uppercase;
   cursor: pointer;
@@ -35,7 +39,6 @@ const shared = css`
 `
 
 const primary = css`
-  ${shared};
   background: ${({ theme }) => theme.colors.surface.brand};
   color: ${({ theme }) => theme.colors.content.inverse};
   border-color: ${({ theme }) => theme.colors.surface.brand};
@@ -47,9 +50,8 @@ const primary = css`
 `
 
 const gold = css`
-  ${shared};
   background: ${({ theme }) => theme.colors.surface.gold};
-  color: ${({ theme }) => theme.colors.surface.ink};
+  color: ${({ theme }) => theme.colors.content.accent};
   border-color: ${({ theme }) => theme.colors.surface.gold};
 
   &:hover:not(:disabled) {
@@ -60,20 +62,19 @@ const gold = css`
 `
 
 const ghost = css`
-  ${shared};
   background: transparent;
   color: ${({ theme }) => theme.colors.content.inverse};
   border-color: ${({ theme }) => theme.colors.content.inverse};
+  border-width: ${({ theme }) => theme.layout.ctaBorder};
 
   &:hover:not(:disabled) {
     background: ${({ theme }) => theme.colors.surface.gold};
-    color: ${({ theme }) => theme.colors.surface.ink};
+    color: ${({ theme }) => theme.colors.content.accent};
     border-color: ${({ theme }) => theme.colors.surface.gold};
   }
 `
 
 const ink = css`
-  ${shared};
   background: ${({ theme }) => theme.colors.surface.raised};
   color: ${({ theme }) => theme.colors.content.accent};
   border-color: ${({ theme }) => theme.colors.border.strong};
@@ -87,17 +88,25 @@ const ink = css`
 
 const variants = { primary, gold, ghost, ink }
 
-const ButtonEl = styled.button<{ $variant: keyof typeof variants }>`
+const ButtonEl = styled.button<{ $variant: keyof typeof variants; $size: 'md' | 'lg' }>`
+  ${shared};
   ${({ $variant }) => variants[$variant]};
 `
 
-const LinkEl = styled(Link)<{ $variant: keyof typeof variants }>`
+const LinkEl = styled(Link)<{ $variant: keyof typeof variants; $size: 'md' | 'lg' }>`
+  ${shared};
+  ${({ $variant }) => variants[$variant]};
+`
+
+const AnchorEl = styled.a<{ $variant: keyof typeof variants; $size: 'md' | 'lg' }>`
+  ${shared};
   ${({ $variant }) => variants[$variant]};
 `
 
 type ButtonProps = {
   children: React.ReactNode
   variant?: keyof typeof variants
+  size?: 'md' | 'lg'
   href?: string
   type?: 'button' | 'submit'
   disabled?: boolean
@@ -107,20 +116,28 @@ type ButtonProps = {
 const ButtonComponent = ({
   children,
   variant = 'primary',
+  size = 'md',
   href,
   type = 'button',
   disabled,
   onClick,
 }: ButtonProps) => {
   if (href) {
+    if (href.startsWith('http') || href.startsWith('mailto:')) {
+      return (
+        <AnchorEl $size={size} $variant={variant} href={href} rel="noreferrer" target="_blank">
+          {children}
+        </AnchorEl>
+      )
+    }
     return (
-      <LinkEl $variant={variant} href={href}>
+      <LinkEl $size={size} $variant={variant} href={href}>
         {children}
       </LinkEl>
     )
   }
   return (
-    <ButtonEl $variant={variant} disabled={disabled} onClick={onClick} type={type}>
+    <ButtonEl $size={size} $variant={variant} disabled={disabled} onClick={onClick} type={type}>
       {children}
     </ButtonEl>
   )

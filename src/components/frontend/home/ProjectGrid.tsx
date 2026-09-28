@@ -20,7 +20,7 @@ const Grid = styled.div`
 
 const Card = styled(Link)`
   background: ${({ theme }) => theme.colors.surface.raised};
-  padding: ${({ theme }) => theme.spacing(6)};
+  padding: ${({ theme }) => theme.spacing(8)};
   display: grid;
   gap: ${({ theme }) => theme.spacing(3)};
   height: 100%;

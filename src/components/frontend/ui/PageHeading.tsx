@@ -5,8 +5,10 @@ import styled from 'styled-components'
 
 const Heading = styled.h1`
   margin: 0;
-  font-size: ${({ theme }) => theme.typography.fontSizes.xxl};
+  font-size: ${({ theme }) => theme.typography.fontSizes.hero};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
+  max-width: 18ch;
 `
 
 type HeadingProps = {

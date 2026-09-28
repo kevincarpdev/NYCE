@@ -22,7 +22,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Sear
 
   return (
     <>
-      <PageSection>
+      <PageSection tone="raised">
         <SectionWrapper>
           <PageHeading>Library</PageHeading>
           <p>
@@ -32,7 +32,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Sear
           <LibraryFilters current={params} projects={projects} topics={topics} />
         </SectionWrapper>
       </PageSection>
-      <SubmissionGrid items={items} title={`${items.length} in view`} />
+      <SubmissionGrid items={items} title={`${items.length} in view`} tone="paper" />
     </>
   )
 }

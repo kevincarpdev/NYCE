@@ -12,3 +12,9 @@ CLAUDE.md
 playwright-report
 test-results
 tsconfig.tsbuildinfo
+src/app/(proposal)
+src/components/proposal
+src/lib/proposal.ts
+scripts
+proposal
+

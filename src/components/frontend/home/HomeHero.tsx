@@ -4,15 +4,25 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, MagnifyingGlass } from '@phosphor-icons/react'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 
 import { Button } from '@/components/frontend/ui/Button'
 import { BrandWave } from '@/components/frontend/layout/BrandWave'
 import { BaseContainer } from '@/components/frontend/layout/Containers'
+import { RevealText } from '@/components/frontend/motion/RevealText'
 import { brandPhotos } from '@/lib/brand'
 import type { TopicCard } from '@/lib/queries'
 import { libraryHref } from '@/lib/libraryHref'
 import { theme } from '@/theme/theme'
+
+const drift = keyframes`
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(${theme.layout.heroZoom});
+  }
+`
 
 const Hero = styled.section`
   background: ${({ theme }) => theme.colors.surface.brand};
@@ -33,6 +43,12 @@ const PhotoBand = styled.div`
 
 const Photo = styled(Image)`
   object-fit: cover;
+  animation: ${drift} ${({ theme }) => theme.motion.zoom} ${({ theme }) => theme.motion.easing}
+    alternate infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `
 
 const Overlay = styled.div`
@@ -48,7 +64,11 @@ const Overlay = styled.div`
 `
 
 const Body = styled.div`
-  padding-block: ${({ theme }) => theme.spacing(16)};
+  padding-block: ${({ theme }) => theme.spacing(20)};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    padding-block: ${({ theme }) => theme.spacing(28)};
+  }
 `
 
 const Eyebrow = styled.p`
@@ -56,22 +76,23 @@ const Eyebrow = styled.p`
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.wide};
   text-transform: uppercase;
   font-size: ${({ theme }) => theme.typography.fontSizes.xs};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
   color: ${({ theme }) => theme.colors.surface.gold};
 `
 
 const Title = styled.h1`
   margin: 0;
   max-width: 18ch;
-  font-size: ${({ theme }) => theme.typography.fontSizes.display};
+  font-size: ${({ theme }) => theme.typography.fontSizes.hero};
   line-height: ${({ theme }) => theme.typography.lineHeights.tight};
   letter-spacing: ${({ theme }) => theme.typography.letterSpacing.tight};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
 `
 
 const Lead = styled.p`
   margin: ${({ theme }) => theme.spacing(6)} 0 0;
   max-width: 42rem;
-  font-size: ${({ theme }) => theme.typography.fontSizes.lg};
+  font-size: ${({ theme }) => theme.typography.fontSizes.lead};
 `
 
 const Tools = styled.form`
@@ -87,7 +108,7 @@ const Search = styled.label`
   gap: ${({ theme }) => theme.spacing(3)};
   background: ${({ theme }) => theme.colors.surface.raised};
   color: ${({ theme }) => theme.colors.content.primary};
-  padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(4)}`};
+  padding: ${({ theme }) => `${theme.spacing(4)} ${theme.spacing(5)}`};
   flex: 1 1 ${({ theme }) => theme.spacing(50)};
   transition: box-shadow ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
 
@@ -102,6 +123,7 @@ const Input = styled.input`
   width: 100%;
   background: transparent;
   color: inherit;
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
 
   &:focus {
     outline: none;
@@ -111,14 +133,14 @@ const Input = styled.input`
 const Chips = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing(2)};
-  margin-top: ${({ theme }) => theme.spacing(6)};
+  gap: ${({ theme }) => theme.spacing(4)};
+  margin-top: ${({ theme }) => theme.spacing(8)};
 `
 
 const Chip = styled(Link)`
   color: ${({ theme }) => theme.colors.surface.gold};
-  font-size: ${({ theme }) => theme.typography.fontSizes.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  font-size: ${({ theme }) => theme.typography.fontSizes.md};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
   text-underline-offset: ${({ theme }) => theme.spacing(1)};
   transition: color ${({ theme }) => theme.motion.fade} ${({ theme }) => theme.motion.out};
 
@@ -148,7 +170,9 @@ const HomeHeroComponent = ({ topics }: HeroProps) => (
     <Body>
       <BaseContainer>
         <Eyebrow>The New York Climate Exchange</Eyebrow>
-        <Title>Leave the work you are not taking forward.</Title>
+        <Title>
+          <RevealText as="span" text="Leave the work you are not taking forward." />
+        </Title>
         <Lead>
           Professors and students building climate-tech startups send in research they will not take
           forward. Next semester can find it. Ownership and attribution stay on the record.
@@ -158,7 +182,7 @@ const HomeHeroComponent = ({ topics }: HeroProps) => (
             <MagnifyingGlass size={theme.icons.md} />
             <Input name="q" placeholder="Search leftover research" />
           </Search>
-          <Button type="submit" variant="gold">
+          <Button size="lg" type="submit" variant="gold">
             Search the library
             <ArrowRight size={theme.icons.md} />
           </Button>

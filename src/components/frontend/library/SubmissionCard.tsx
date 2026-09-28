@@ -13,7 +13,7 @@ import { theme } from '@/theme/theme'
 const Card = styled(Link)`
   background: ${({ theme }) => theme.colors.surface.raised};
   border-top: ${({ theme }) => `${theme.spacing(1)} solid ${theme.colors.surface.gold}`};
-  padding: ${({ theme }) => theme.spacing(6)};
+  padding: ${({ theme }) => theme.spacing(8)};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(4)};
